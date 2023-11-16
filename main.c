@@ -6,8 +6,8 @@
 #include "utils.h"
 #include "mergesort.h"
 
-#define SIZE 500000000
-#define THREAD_DEPTH 1 // 2^THREAD_DEPTH = THREAD_COUNT
+#define SIZE 50000000
+#define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 
 int main() {
@@ -20,7 +20,8 @@ int main() {
 
     omp_set_nested(1);
     clock_t start = clock();
-    merge_sort(arr, SIZE);
+    parallel_merge_sort(arr, SIZE, THREAD_DEPTH);
+    // merge_sort(arr, SIZE);
     clock_t end = clock();
     double elapsed_ms = (double)(end - start) / CLOCKS_PER_SEC * 1000;
 
