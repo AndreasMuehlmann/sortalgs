@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <omp.h>
 
 #include "utils.h"
 #include "mergesort.h"
+#include "quicksort.h"
 
-#define SIZE 50000000
+#define SIZE 10
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 
@@ -15,18 +15,21 @@ int main() {
     int *arr = malloc(SIZE * sizeof(int));
     fill_rand(arr, SIZE);
     
-    //printf("array:\n");
-    //print_array(arr, SIZE);
+    print_array(arr, SIZE);
 
-    omp_set_nested(1);
     clock_t start = clock();
-    parallel_merge_sort(arr, SIZE, THREAD_DEPTH);
-    // merge_sort(arr, SIZE);
+    //parallel_mergesort(arr, SIZE, THREAD_DEPTH);
+    mergesort(arr, SIZE);
     clock_t end = clock();
     double elapsed_ms = (double)(end - start) / CLOCKS_PER_SEC * 1000;
 
-    //printf("sorted array:\n");
-    //print_array(arr, SIZE);
+    if (is_sorted) {
+        printf("array is sorted\n");
+    }
+    else {
+        printf("array is sorted\n");
+    }
+    print_array(arr, SIZE);
 
     printf("%.5f ms\n", elapsed_ms);
     free(arr);

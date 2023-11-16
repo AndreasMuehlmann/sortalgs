@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
 
 void merge(int *arr, int low_bound, int cut_index, int up_bound, int *left_arr, int *right_arr) {
@@ -30,47 +31,48 @@ void merge(int *arr, int low_bound, int cut_index, int up_bound, int *left_arr, 
     free(right_arr);
 }
 
-void merge_sort_helper(int *arr, int low_bound, int up_bound, int *left_arr, int *right_arr) {
+void mergesort_helper(int *arr, int low_bound, int up_bound, int *left_arr, int *right_arr) {
     if (low_bound >= up_bound - 1) {
         return;
     }
     int cut_index = (int)(low_bound + (int)((up_bound - low_bound) / 2));
-    merge_sort_helper(arr, low_bound, cut_index, left_arr, right_arr);
-    merge_sort_helper(arr, cut_index, up_bound, left_arr, right_arr);
+    mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr);
+    mergesort_helper(arr, cut_index, up_bound, left_arr, right_arr);
     merge(arr, low_bound, cut_index, up_bound, left_arr, right_arr);
 }
 
-void merge_sort(int *arr, int size) {
+void mergesort(int *arr, int size) {
     int *left_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     int *right_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
-    merge_sort_helper(arr, 0, size, left_arr, right_arr);
+    mergesort_helper(arr, 0, size, left_arr, right_arr);
 }
 
 
-void parallel_merge_sort_helper(int *arr, int low_bound, int up_bound, int* left_arr, int* right_arr, int depth, int max_thread_depth) {
+void parallel_mergesort_helper(int *arr, int low_bound, int up_bound, int* left_arr, int* right_arr, int depth, int max_thread_depth) {
     if (low_bound >= up_bound - 1) {
         return;
     }
     int cut_index = (int)(low_bound + (int)((up_bound - low_bound) / 2));
     if (depth > max_thread_depth) {
-        parallel_merge_sort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
-        parallel_merge_sort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
+        parallel_mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
+        parallel_mergesort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
     } else {
         #pragma omp parallel sections num_threads(2)
         {
             #pragma omp section
-            parallel_merge_sort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
+            parallel_mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
 
             #pragma omp section
-            parallel_merge_sort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
+            parallel_mergesort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
         }
     }
     merge(arr, low_bound, cut_index, up_bound, left_arr, right_arr);
     return;
 }
 
-void parallel_merge_sort(int *arr, int size, int max_thread_depth) {
+void parallel_mergesort(int *arr, int size, int max_thread_depth) {
+    omp_set_nested(1);
     int* left_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     int* right_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
-    parallel_merge_sort_helper(arr, 0, size, left_arr, right_arr, 0, max_thread_depth);
+    parallel_mergesort_helper(arr, 0, size, left_arr, right_arr, 0, max_thread_depth);
 }
