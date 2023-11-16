@@ -6,7 +6,7 @@
 #include "mergesort.h"
 #include "quicksort.h"
 
-#define SIZE 10
+#define SIZE 1000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 
@@ -19,7 +19,8 @@ int main() {
 
     clock_t start = clock();
     //parallel_mergesort(arr, SIZE, THREAD_DEPTH);
-    mergesort(arr, SIZE);
+    //mergesort(arr, SIZE);
+    quicksort(arr, SIZE);
     clock_t end = clock();
     double elapsed_ms = (double)(end - start) / CLOCKS_PER_SEC * 1000;
 
