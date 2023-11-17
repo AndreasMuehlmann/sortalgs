@@ -5,8 +5,9 @@
 #include "utils.h"
 #include "mergesort.h"
 #include "quicksort.h"
+#include "psrs.h"
 
-#define SIZE 100000000
+#define SIZE 10000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 
@@ -28,7 +29,7 @@ int main() {
         printf("array is sorted\n");
     }
     else {
-        printf("array is sorted\n");
+        printf("array is not sorted\n");
     }
     //print_array(arr, SIZE);
 
