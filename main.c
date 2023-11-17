@@ -8,7 +8,7 @@
 #include "psrs.h"
 
 #define SIZE 10000
-#define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
+#define THREAD_DEPTH 0 // 2^THREAD_DEPTH = THREAD_COUNT
 
 
 int main() {
@@ -18,13 +18,16 @@ int main() {
     
     //print_array(arr, SIZE);
 
-    clock_t start = clock();
-    //parallel_mergesort(arr, SIZE, THREAD_DEPTH);
+    struct timespec start, finish;
+
+    //printf("is search for up_bound working: %d\n", test_search_up_bound());
+    clock_gettime(CLOCK_MONOTONIC, &start);
     //mergesort(arr, SIZE);
     //quicksort(arr, SIZE);
+    //parallel_mergesort(arr, SIZE, THREAD_DEPTH);
     psrs(arr, SIZE);
-    clock_t end = clock();
-    double elapsed_ms = (double)(end - start) / CLOCKS_PER_SEC * 1000;
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    double elapsed_ms = (double)(finish.tv_sec - start.tv_sec) * 1000.0 + (double)(finish.tv_nsec - start.tv_nsec) / 1000000.0;
 
     if (is_sorted(arr, SIZE)) {
         printf("array is sorted\n");
