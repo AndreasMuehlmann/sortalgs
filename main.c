@@ -21,7 +21,8 @@ int main() {
     clock_t start = clock();
     //parallel_mergesort(arr, SIZE, THREAD_DEPTH);
     //mergesort(arr, SIZE);
-    quicksort(arr, SIZE);
+    //quicksort(arr, SIZE);
+    psrs(arr, SIZE);
     clock_t end = clock();
     double elapsed_ms = (double)(end - start) / CLOCKS_PER_SEC * 1000;
 
