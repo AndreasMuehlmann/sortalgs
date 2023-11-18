@@ -5,6 +5,16 @@
 
 #include "utils.h"
 #include "quicksort.h"
+#include "mergesort.h"
+
+
+int sum(int *arr, int size) {
+    int result = 0;
+    for (int i = 0; i < size; i++) {
+        result += arr[i]; 
+    }
+    return result;
+}
 
 int linear_search_up_bound(int *arr, int low, int up, int searched) {
     for (int i = low; i < up; i++) {
@@ -67,7 +77,7 @@ void psrs(int *arr, int size) {
     for (int i = 0; i < cores; i++) {
         regularly_split_arrays_sizes[i] = 0;
     }
-    int **regularly_split_arrays = (int**)malloc(cores * sizeof(int));
+    int **regularly_split_arrays = (int**)malloc(cores * sizeof(int*));
 
     #pragma omp parallel
     {
@@ -101,8 +111,8 @@ void psrs(int *arr, int size) {
             for (int i = 1; i < cores; i++) {
                 pivots[i - 1] = samples[(int)(i * samples_size / cores)];
             }
-            //printf("pivots: ");
-            //print_array(pivots, cores);
+            printf("pivots: ");
+            print_array(pivots, cores - 1);
         }
 
         #pragma omp barrier
@@ -134,26 +144,41 @@ void psrs(int *arr, int size) {
 
         #pragma omp single
         {
+            //printf("sizes: ");
+            //print_array(regularly_split_arrays_sizes, cores);
             for (int i = 0; i < cores; i++) {
                 regularly_split_arrays_sizes[i] = 0;
             }
+
         }
 
         #pragma omp barrier
-        int inserted_size; 
-        for (int i = 0; i < cores; i++) {
-            inserted_size = thread_pivot_indices[i + 1] - thread_pivot_indices[i];
-            memcpy(regularly_split_arrays[i] + regularly_split_arrays_sizes[i],
-                    thread_arr + thread_pivot_indices[i], inserted_size * sizeof(int));
+        int inserted_size, insertion_index; 
+        for (int i = 0; i < cores - 1; i++) {
+            insertion_index = i + id;
+            if (insertion_index >= cores) {insertion_index -= cores;}
+            inserted_size = thread_pivot_indices[insertion_index + 1] - thread_pivot_indices[insertion_index];
+            memcpy(regularly_split_arrays[insertion_index] + regularly_split_arrays_sizes[insertion_index],
+                    thread_arr + thread_pivot_indices[insertion_index], inserted_size * sizeof(int));
+
             #pragma omp critical
             {
+                //print_array(regularly_split_arrays[i] + regularly_split_arrays_sizes[i], inserted_size);
+                regularly_split_arrays_sizes[insertion_index] += inserted_size;
 
-                print_array(regularly_split_arrays[i] + regularly_split_arrays_sizes[i], inserted_size);
-                regularly_split_arrays_sizes[i] += inserted_size;
             }
 
             #pragma omp barrier
         }
+        /*
+        if (id == 0) {
+            printf("thread arr %d\n", id);
+            print_array(thread_arr, thread_arr_size);
+            printf("after insertiond\n");
+            print_array(regularly_split_arrays[id], regularly_split_arrays_sizes[id]);
+        }
+        */
+        free(regularly_split_arrays[id]);
         free(thread_arr);
     }
 }

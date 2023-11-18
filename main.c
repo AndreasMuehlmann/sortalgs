@@ -7,9 +7,10 @@
 #include "quicksort.h"
 #include "psrs.h"
 
-#define SIZE 10000
-#define THREAD_DEPTH 0 // 2^THREAD_DEPTH = THREAD_COUNT
+#define SIZE 1000000000
+#define THREAD_DEPTH 1 // 2^THREAD_DEPTH = THREAD_COUNT
 
+//FIXME: parallel_mergesort: array is not sorted
 
 int main() {
     srand(time(0));
