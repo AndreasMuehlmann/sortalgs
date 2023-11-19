@@ -43,31 +43,24 @@ int binary_search_up_bound(int *arr, int low, int up, int searched) {
     return linear_search_up_bound(arr, low, max_up, searched);
 }
 
-int calc_offset(int **sizes, int part, int sub_part, int cores) {
-    int offset = 0;
-    for (int i = 0; i < part; i++) {
-        offset += sum(sizes[i], cores);
-    }
-    offset += sum(sizes[part], sub_part);
-    return offset;
-}
-
 int get_thread_array_size(int size, int cores, int id) {
     int thread_arr_size = (int)(size / cores);
     if (id == cores - 1 && size % cores != 0) {
-        thread_arr_size++;
+        thread_arr_size += size - thread_arr_size * cores;
     }
     return thread_arr_size;
 }
 
 int *create_thread_array(int *arr, int thread_arr_size, int id) {
     int *thread_arr = (int*)malloc(thread_arr_size * sizeof(int));
+    //FIXME: this is not right for the thread with id cores - 1
     memcpy(thread_arr, arr + thread_arr_size * id, thread_arr_size * sizeof(int));
+    return thread_arr;
 }
 
 void get_samples(int *source_arr, int source_size, int *dest_arr, int sample_count) {
     for (int i = 1; i < sample_count + 1; i++) {
-        dest_arr[i - 1] = source_arr[(int)(i * source_size / sample_count)];
+        dest_arr[i - 1] = source_arr[(int)(i * source_size / (sample_count + 1))];
     }
 }
 
@@ -86,6 +79,14 @@ void get_regularly_split_arrays_sizes(int **regularly_split_arrays_sizes, int *t
     }
 }
 
+int calc_offset(int **sizes, int part, int sub_part, int cores) {
+    int offset = 0;
+    for (int i = 0; i < part; i++) {
+        offset += sum(sizes[i], cores);
+    }
+    offset += sum(sizes[part], sub_part);
+    return offset;
+}
 
 void get_offsets(int *offsets, int **regularly_split_arrays_sizes, int cores, int id) {
     for (int i = 0; i < cores + 1; i++) {
@@ -119,6 +120,7 @@ void merge_multiple(int *arr, int *offsets, int cores) {
 
 void psrs(int *arr, int size) {
     const int cores = 2; //omp_get_max_threads();
+    omp_set_num_threads(cores);
     /*
     if (size < 10000) {
         quicksort(arr, size);

@@ -1,0 +1,13 @@
+int sum(int *arr, int size);
+int linear_search_up_bound(int *arr, int low, int up, int searched);
+int binary_search_up_bound(int *arr, int low, int up, int searched);
+int calc_offset(int **sizes, int part, int sub_part, int cores);
+int get_thread_array_size(int size, int cores, int id);
+int *create_thread_array(int *arr, int thread_arr_size, int id);
+void get_samples(int *source_arr, int source_size, int *dest_arr, int sample_count);
+void get_thread_pivot_indices(int *thread_pivot_indices, int *thread_arr, int thread_arr_size, int *thread_pivots, int cores);
+void get_regularly_split_arrays_sizes(int **regularly_split_arrays_sizes, int *thread_pivot_indices, int cores, int id);
+void get_offsets(int *offsets, int **regularly_split_arrays_sizes, int cores, int id);
+void copy_thread_array_to_array(int *arr, int *thread_arr, int **regularly_split_arrays_sizes, int *thread_pivot_indices, int *offsets, int cores, int id);
+void merge_multiple(int *arr, int *offsets, int cores);
+void psrs(int *arr, int size);
