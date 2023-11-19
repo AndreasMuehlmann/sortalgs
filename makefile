@@ -1,5 +1,5 @@
 run:		sortalgs
-	./sortalgs && rm sortalgs
+	./bin/sortalgs
 
-sortalgs:	main.c
-	gcc  main.c utils.c mergesort.c quicksort.c psrs.c -o sortalgs -fopenmp
+sortalgs:	src/*.c
+	gcc -I headers -o bin/sortalgs src/*.c -fopenmp

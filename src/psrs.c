@@ -43,25 +43,6 @@ int binary_search_up_bound(int *arr, int low, int up, int searched) {
     return linear_search_up_bound(arr, low, max_up, searched);
 }
 
-int test_search_up_bound() {
-    int size = 10;
-    int arr[size];
-    int searched = 100;
-    int result_l, result_b;
-    for (int i = 0; i < 10000; i++) {
-        fill_rand(arr, size);
-        quicksort(arr, size);
-        result_l = linear_search_up_bound(arr, 0, size, searched);
-        result_b = binary_search_up_bound(arr, 0, size, searched);
-        if (result_l != result_b) {
-            print_array(arr, size);
-            printf("linear_search: %d, binary_search: %d\n", result_l, result_b);
-            return 0;
-        }
-    }
-    return 1;
-}
-
 int calc_offset(int **sizes, int part, int sub_part, int cores) {
     int offset = 0;
     for (int i = 0; i < part; i++) {
@@ -72,7 +53,7 @@ int calc_offset(int **sizes, int part, int sub_part, int cores) {
 }
 
 void psrs(int *arr, int size) {
-    int cores = omp_get_max_threads();
+    const int cores = 2; //omp_get_max_threads();
     /*
     if (size < 10000) {
         quicksort(arr, size);
@@ -90,23 +71,24 @@ void psrs(int *arr, int size) {
     #pragma omp parallel
     {
         int id = omp_get_thread_num();
+        //int *create_thread_array(arr, size, cores, id);
         int thread_arr_size = (int)(size / cores);
         if (id == cores - 1 && size % cores != 0) {
             thread_arr_size++;
         }
         int *thread_arr = (int*)malloc(thread_arr_size * sizeof(int));
         memcpy(thread_arr, arr + thread_arr_size * id, thread_arr_size * sizeof(int));
+        //end
         quicksort(thread_arr, thread_arr_size);
-        int cut_indices[cores][cores - 1];
 
         #pragma omp critical
         {
-            //printf("id: %d\n", id);
+            //get_samples(int *arr, size, cores)
             for (int i = 1; i < cores; i++) {
                 samples[samples_size + i - 1] = thread_arr[(int)(i * thread_arr_size / cores)];
             }
+            //end
             samples_size += cores - 1;
-            //printf("samples_size: %d\n", samples_size);
         }
 
         #pragma omp barrier
@@ -114,11 +96,11 @@ void psrs(int *arr, int size) {
         #pragma omp single
         {
             quicksort(samples, samples_size);
-            //printf("samples: ");
-            //print_array(samples, samples_size);
+            //call get_samples
             for (int i = 1; i < cores; i++) {
                 pivots[i - 1] = samples[(int)(i * samples_size / cores)];
             }
+            //end
             printf("pivots: ");
             print_array(pivots, cores - 1);
         }
@@ -130,6 +112,7 @@ void psrs(int *arr, int size) {
         {
             memcpy(thread_pivots, pivots, (cores - 1) * sizeof(int));
         }
+        //get_thread_pivot_indices()
         int thread_pivot_indices[cores + 1];
         int thread_pivot_index = 0;
         thread_pivot_indices[0] = thread_pivot_index;
@@ -137,12 +120,15 @@ void psrs(int *arr, int size) {
             thread_pivot_indices[i] = binary_search_up_bound(thread_arr, thread_pivot_index, thread_arr_size, thread_pivots[i - 1]);
         }
         thread_pivot_indices[cores] = thread_arr_size;
+        //end
+
 
         for (int i = 0; i < cores; i++) {
             regularly_split_arrays_sizes[i][id] = thread_pivot_indices[i + 1] - thread_pivot_indices[i];
         }
 
         #pragma omp barrier
+        //copy_thread_array_to_array
         int inserted_size, insertion_index, offset; 
         for (int i = 0; i < cores; i++) {
             insertion_index = i + id;
@@ -151,6 +137,16 @@ void psrs(int *arr, int size) {
             offset = calc_offset(regularly_split_arrays_sizes, id, insertion_index, cores);
             memcpy(arr + offset, thread_arr + thread_pivot_indices[insertion_index], inserted_size * sizeof(int));
         }
+        //end
+
+        //merge_multiple
+        //...
+        //end
+        /*
+        for (int i = 0; i < cores; i++) {
+            print_array(regularly_split_arrays_sizes[i], cores);
+        }
+        */
         free(thread_arr);
 
         #pragma omp barrier
