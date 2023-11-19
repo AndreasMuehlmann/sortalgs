@@ -27,8 +27,6 @@ void merge(int *arr, int low_bound, int cut_index, int up_bound, int *left_arr, 
             }
         }
     }
-    free(left_arr);
-    free(right_arr);
 }
 
 void mergesort_helper(int *arr, int low_bound, int up_bound, int *left_arr, int *right_arr) {
@@ -45,6 +43,8 @@ void mergesort(int *arr, int size) {
     int *left_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     int *right_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     mergesort_helper(arr, 0, size, left_arr, right_arr);
+    free(left_arr);
+    free(right_arr);
 }
 
 
@@ -75,4 +75,6 @@ void parallel_mergesort(int *arr, int size, int max_thread_depth) {
     int* left_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     int* right_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
     parallel_mergesort_helper(arr, 0, size, left_arr, right_arr, 0, max_thread_depth);
+    free(left_arr);
+    free(right_arr);
 }
