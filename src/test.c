@@ -8,6 +8,10 @@
 
 int **give_empty_2d_array(int size) {
     int **arr = (int**)malloc(size * sizeof(int));
+    if (arr == NULL) {
+        printf("ERROR in give_empty_2d_array: NULL pointer\n");
+        exit(1);
+    }
     for (int i = 0; i < size; i++)  {
         arr[i] = (int*)malloc(size * sizeof(int));
     }
@@ -41,7 +45,7 @@ int test_sum() {
 
 int test_search_up_bound() {
     const int size = 10;
-    int arr[size];
+    int arr[10];
     int searched = 100;
     int result_l, result_b;
     for (int i = 0; i < 10000; i++) {
@@ -78,6 +82,46 @@ int test_get_thread_array_size() {
     return 1;
 }
 
+int test_get_samples() {
+    int cores = 3;
+    int* dest_arr = (int*)malloc((cores - 1) * sizeof(int));
+    int* source_arr = (int*)malloc(cores * cores * sizeof(int));
+    if (dest_arr == NULL || source_arr == NULL) {
+        printf("ERROR in get_samples: NULL pointer\n");
+        return 0;
+    }
+    get_samples(source_arr, cores * cores, dest_arr, cores - 1);
+    if (dest_arr[0] != source_arr[3] && dest_arr[1] != source_arr[6]) {
+        printf("ERROR in get_samples\n");
+        print_array(source_arr, cores * cores);
+        print_array(dest_arr, cores - 1);
+        return 0;
+    }
+    free(dest_arr);
+    free(source_arr);
+    return 1;
+}
+
+int test_get_thread_pivot_indices() {
+    int cores = 3;
+    int* dest_arr = (int*)malloc((cores - 1) * sizeof(int));
+    int* source_arr = (int*)malloc(cores * cores * sizeof(int));
+    if (dest_arr == NULL || source_arr == NULL) {
+        printf("ERROR in get_samples: NULL pointer\n");
+        return 0;
+    }
+    get_samples(source_arr, cores * cores, dest_arr, cores - 1);
+    if (dest_arr[0] != source_arr[3] && dest_arr[1] != source_arr[6]) {
+        printf("ERROR in get_samples\n");
+        print_array(source_arr, cores * cores);
+        print_array(dest_arr, cores - 1);
+        return 0;
+    }
+    free(dest_arr);
+    free(source_arr);
+    return 1;
+}
+
 int test_calc_offset() {
     int **sizes = give_2d_sizes(); 
     int result;
@@ -96,11 +140,15 @@ int test_calc_offset() {
         printf("ERROR in calc_offset: result %d, part 0, sub_part 0; expected 56\n", result);
         return 0;
     }
+    for (int i = 0; i < 3; i++) {
+        free(sizes[i]);
+    }
+    free(sizes);
     return 1;
 }
 
 void test() {
-    int result;
+    int result = 1;
     if (test_sum() != 1) {
         result = 0;
     }
@@ -110,9 +158,17 @@ void test() {
     if (test_get_thread_array_size() != 1) {
         result = 0;
     }
+    /*
+    if (test_get_samples()) {
+        result = 0;
+    } 
+    if (test_get_thread_pivot_indices() != 1) {
+        result = 0;
+    }
     if (test_calc_offset() != 1) {
         result = 0;
     }
+    */
     if (!result) {
         exit(1);
     }

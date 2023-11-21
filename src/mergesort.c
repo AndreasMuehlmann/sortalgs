@@ -63,7 +63,7 @@ void parallel_mergesort_helper(int *arr, int low_bound, int up_bound, int* left_
             parallel_mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
 
             #pragma omp section
-            parallel_mergesort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
+            parallel_mergesort_helper(arr, cut_index, up_bound, left_arr  + (cut_index - low_bound), right_arr + (cut_index - low_bound), depth + 1, max_thread_depth);
         }
     }
     merge(arr, low_bound, cut_index, up_bound, left_arr, right_arr);
@@ -72,8 +72,8 @@ void parallel_mergesort_helper(int *arr, int low_bound, int up_bound, int* left_
 
 void parallel_mergesort(int *arr, int size, int max_thread_depth) {
     omp_set_nested(1);
-    int* left_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
-    int* right_arr = malloc(((int)(size / 2) + 1) * sizeof(int));
+    int* left_arr = malloc(size * sizeof(int));
+    int* right_arr = malloc(size * sizeof(int));
     parallel_mergesort_helper(arr, 0, size, left_arr, right_arr, 0, max_thread_depth);
     free(left_arr);
     free(right_arr);
