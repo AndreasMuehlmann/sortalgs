@@ -8,9 +8,9 @@
 #include "mergesort.h"
 
 
-#define CORES 4
+#define CORES 16
 
-int** create_2d_array(dimension_1, dimension_2) {
+int** create_2d_array(int dimension_1, int dimension_2) {
     int** arr = (int**)malloc(dimension_1 * sizeof(int*));
     if (arr == NULL) {
         printf("ERROR: In allocation\n");
@@ -119,7 +119,7 @@ void get_offsets(int** offsets, int** sizes, int cores) {
             offsets[i][j + 1] = offset;
         }
     }
-    return offsets;
+    return;
 }
 
 void copy_thread_array_to_array(int *arr, int *thread_arr, int **offsets, int **regularly_split_arrays_sizes, int *thread_pivot_indices, int cores, int id) {
@@ -165,7 +165,6 @@ void psrs(int *arr, int size) {
     int samples[CORES * (CORES - 1)];
     //FIXME: Change this back to cores - 1
     int pivots[CORES - 1];
-    int** regularly_split_arrays_sizes = create_2d_array(cores, cores);
 
     #pragma omp parallel
     {
@@ -199,6 +198,7 @@ void psrs(int *arr, int size) {
         //FIXME: Change this back to cores - 1
         int thread_pivots[CORES - 1];
 
+        /*
         #pragma omp critical
         {
             memcpy(thread_pivots, pivots, (cores - 1) * sizeof(int));
@@ -207,21 +207,34 @@ void psrs(int *arr, int size) {
         }
 
         #pragma omp barrier
+        */
         //FIXME: Change this back to cores + 1
         int thread_pivot_indices[CORES + 1];
-        get_thread_pivot_indices(thread_pivot_indices, thread_arr, thread_arr_size, thread_pivots, cores);
+        get_thread_pivot_indices(thread_pivot_indices, thread_arr, thread_arr_size, pivots, cores);
+        //get_thread_pivot_indices(thread_pivot_indices, thread_arr, thread_arr_size, thread_pivots, cores);
         //print_array(thread_pivot_indices, 3);
         //FIXME: pivot_indices can be the same or really close to eachother
+        int** regularly_split_arrays_sizes = create_2d_array(cores, cores);
         get_regularly_split_arrays_sizes(regularly_split_arrays_sizes, thread_pivot_indices, cores, id);
        
         #pragma omp barrier
         int** offsets = create_2d_array(cores, cores + 1);
-        get_offsets(offsets, regularly_split_arrays_sizes, cores, id);
-        #pragma omp barrier
+        get_offsets(offsets, regularly_split_arrays_sizes, cores);
         copy_thread_array_to_array(arr, thread_arr, offsets, regularly_split_arrays_sizes, thread_pivot_indices, cores, id);
         free(thread_arr);
         
         #pragma omp barrier
         merge_multiple(arr, offsets[id], cores);
+        /*
+        free(regularly_split_arrays_sizes[id]);
+        free(offsets[id]);
+
+        #pragma omp barrier
+        #pragma omp single
+        {
+            free(offsets);
+            free(regularly_split_arrays_sizes);
+        }
+        */
     }
 }
