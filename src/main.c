@@ -8,10 +8,10 @@
 #include "test.h"
 #include "utils.h"
 
-#define SIZE 1000000000
+#define SIZE 1000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
-// FIXME: parallel_mergesort: array is not sorted
+// FIXME: parallel_mergesort: left and right array could be shorter
 
 int main() {
     srand(time(0));
@@ -23,13 +23,12 @@ int main() {
 
     struct timespec start, finish;
 
-    // printf("is search for up_bound working: %d\n", test_search_up_bound());
     timespec_get(&start, TIME_UTC);
     //clock_gettime(CLOCK_MONOTONIC, &start);
     // mergesort(arr, SIZE);
     // quicksort(arr, SIZE);
-    parallel_mergesort(arr, SIZE, THREAD_DEPTH);
-    //psrs(arr, SIZE);
+    // parallel_mergesort(arr, SIZE, THREAD_DEPTH);
+    psrs(arr, SIZE);
     //clock_gettime(CLOCK_MONOTONIC, &finish);
     timespec_get(&finish, TIME_UTC);
     double elapsed_ms = (double)(finish.tv_sec - start.tv_sec) * 1000.0 +

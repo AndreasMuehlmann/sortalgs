@@ -12,8 +12,8 @@ void print_array(int *arr, int size) {
 
 
 void fill_rand(int *arr, int size) {
-    int max_value = size;
-    if (size > 100000000) {
+    int max_value = size * 10;
+    if (size * 10 > 100000000) {
         max_value = 100000000;
     }
     for (int i = 0; i < size; i++) {
