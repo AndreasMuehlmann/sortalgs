@@ -8,9 +8,6 @@
 #include "mergesort.h"
 
 
-#define CORES 17 // core count as power of 2 is most efficient in the merging
-
-
 int** create_2d_array(int dimension_1, int dimension_2) {
     int** arr = (int**)malloc(dimension_1 * sizeof(int*));
     if (arr == NULL) {
@@ -153,19 +150,14 @@ void merge_multiple(int *arr, int *offsets, int cores) {
 }
 
 void psrs(int *arr, int size) {
-    const int cores = CORES; //omp_get_max_threads();
-    omp_set_num_threads(cores);
-    /*
-    if (size < 10000 || cores == 1) {
+    const int cores = omp_get_max_threads();
+    if (size < 1000 || cores == 1) {
         quicksort(arr, size);
         return;
     }
-    */
     int samples_size = 0;
-    //FIXME: Change this back to cores * (cores - 1)
-    int samples[CORES * (CORES - 1)];
-    //FIXME: Change this back to cores - 1
-    int pivots[CORES - 1];
+    int samples[cores * (cores - 1)];
+    int pivots[cores - 1];
     int** regularly_split_arrays_sizes = create_2d_array(cores, cores);
 
     #pragma omp parallel
@@ -190,17 +182,12 @@ void psrs(int *arr, int size) {
         }
 
         #pragma omp barrier
-        //FIXME: Change this back to cores - 1
-        int thread_pivots[CORES - 1];
+        int thread_pivots[cores - 1];
 
-        #pragma omp critical
-        {
-            memcpy(thread_pivots, pivots, (cores - 1) * sizeof(int));
-        }
+        memcpy(thread_pivots, pivots, (cores - 1) * sizeof(int));
 
         #pragma omp barrier
-        //FIXME: Change this back to cores + 1
-        int thread_pivot_indices[CORES + 1];
+        int thread_pivot_indices[cores + 1];
         get_thread_pivot_indices(thread_pivot_indices, thread_arr, thread_arr_size, thread_pivots, cores);
         //FIXME: pivot_indices can be the same or really close to eachother
         get_regularly_split_arrays_sizes(regularly_split_arrays_sizes, thread_pivot_indices, cores, id);
@@ -213,9 +200,6 @@ void psrs(int *arr, int size) {
         free(thread_arr);
         
         #pragma omp barrier
-        #pragma omp critical
-        {
-            merge_multiple(arr, offsets[id], cores);
-        }
+        merge_multiple(arr, offsets[id], cores);
     }
 }

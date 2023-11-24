@@ -7,7 +7,7 @@
 #include "quicksort.h"
 #include "utils.h"
 
-#define SIZE 10000
+#define SIZE 1000000000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 // FIXME: parallel_mergesort: left and right array could be shorter
