@@ -3,7 +3,6 @@
 #include <string.h>
 #include <omp.h>
 
-#include "utils.h"
 #include "quicksort.h"
 #include "mergesort.h"
 
