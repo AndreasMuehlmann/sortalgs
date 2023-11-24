@@ -5,17 +5,15 @@
 #include "mergesort.h"
 #include "psrs.h"
 #include "quicksort.h"
-#include "test.h"
 #include "utils.h"
 
-#define SIZE 100000
+#define SIZE 10000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 // FIXME: parallel_mergesort: left and right array could be shorter
 
 int main() {
     srand(time(0));
-    //test();
     int *arr = malloc(SIZE * sizeof(int));
     fill_rand(arr, SIZE);
 

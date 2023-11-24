@@ -8,7 +8,7 @@
 #include "mergesort.h"
 
 
-#define CORES 4
+#define CORES 17 // core count as power of 2 is most efficient in the merging
 
 
 int** create_2d_array(int dimension_1, int dimension_2) {
@@ -135,16 +135,17 @@ void copy_thread_array_to_array(int *arr, int *thread_arr, int **offsets, int **
 void merge_multiple(int *arr, int *offsets, int cores) {
     int *left_arr = (int*)malloc((offsets[cores] - offsets[0]) * sizeof(int));
     int *right_arr = (int*)malloc((offsets[cores] - offsets[0]) * sizeof(int));
-    int cut_index; 
-    int length_offsets = cores + 1;
-    if ((cores + 1) % 2 == 0) {
-        merge(arr, offsets[cores - 2], offsets[cores - 1], offsets[cores], left_arr, right_arr);
-        offsets[cores - 1] = offsets[cores];
-        length_offsets--;
-    }
-    for (int distance = 1; distance < length_offsets; distance++) {
-        for (int i = 2 * distance; i < length_offsets; i += 2 * distance) {
-            merge(arr, offsets[i - 2 * distance], offsets[i - 1 * distance], offsets[i], left_arr, right_arr);
+    int cut_index, i;
+    int count_bounds = cores + 1;
+    for (int distance_bounds = 2; distance_bounds < count_bounds; distance_bounds *= 2) {
+        for (i = distance_bounds; i < count_bounds; i += distance_bounds) {
+            merge(arr, offsets[i - distance_bounds], offsets[i - (int)(distance_bounds / 2)], offsets[i], left_arr, right_arr);
+        }
+        i -= distance_bounds;
+        if (i < count_bounds - 1) {
+            merge(arr, offsets[i - distance_bounds], offsets[i], offsets[count_bounds - 1], left_arr, right_arr);
+            offsets[i] = offsets[count_bounds - 1];
+            count_bounds = i + 1;
         }
     }
     free(left_arr);
@@ -170,7 +171,6 @@ void psrs(int *arr, int size) {
     #pragma omp parallel
     {
         int id = omp_get_thread_num();
-        //printf("id: %d\n", id);
         int thread_arr_size = get_thread_array_size(size, cores, id);
         int *thread_arr = create_thread_array(arr, size, thread_arr_size, id, cores);
         quicksort(thread_arr, thread_arr_size);
@@ -179,8 +179,6 @@ void psrs(int *arr, int size) {
         {
             get_samples(thread_arr, thread_arr_size, samples + samples_size, cores - 1);
             samples_size += cores - 1;
-            //printf("thread_arr: ");
-            //print_array(thread_arr, thread_arr_size);
         }
 
         #pragma omp barrier
@@ -188,11 +186,7 @@ void psrs(int *arr, int size) {
         #pragma omp single
         {
             quicksort(samples, samples_size);
-            //printf("samples: ");
-            //print_array(samples, samples_size);
             get_samples(samples, samples_size, pivots, cores - 1);
-            //printf("pivots: ");
-            //print_array(pivots, cores - 1);
         }
 
         #pragma omp barrier
@@ -202,15 +196,12 @@ void psrs(int *arr, int size) {
         #pragma omp critical
         {
             memcpy(thread_pivots, pivots, (cores - 1) * sizeof(int));
-            //printf("thread_pivots: ");
-            //print_array(thread_pivots, cores - 1);
         }
 
         #pragma omp barrier
         //FIXME: Change this back to cores + 1
         int thread_pivot_indices[CORES + 1];
         get_thread_pivot_indices(thread_pivot_indices, thread_arr, thread_arr_size, thread_pivots, cores);
-        //print_array(thread_pivot_indices, 3);
         //FIXME: pivot_indices can be the same or really close to eachother
         get_regularly_split_arrays_sizes(regularly_split_arrays_sizes, thread_pivot_indices, cores, id);
        
@@ -222,6 +213,9 @@ void psrs(int *arr, int size) {
         free(thread_arr);
         
         #pragma omp barrier
-        merge_multiple(arr, offsets[id], cores);
+        #pragma omp critical
+        {
+            merge_multiple(arr, offsets[id], cores);
+        }
     }
 }
