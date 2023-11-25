@@ -200,5 +200,17 @@ void psrs(int *arr, int size) {
         
         #pragma omp barrier
         merge_multiple(arr, offsets[id], cores);
+
+        #pragma omp single
+        {
+            for (int i = 0; i < cores; i++) {
+                free(offsets[i]);
+                free(regularly_split_arrays_sizes[i]);
+            }
+            free(offsets[cores]);
+            free(offsets);
+            free(regularly_split_arrays_sizes);
+        }
     }
+
 }
