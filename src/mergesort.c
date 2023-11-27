@@ -48,33 +48,31 @@ void mergesort(int *arr, int size) {
 }
 
 
-void parallel_mergesort_helper(int *arr, int low_bound, int up_bound, int* left_arr, int* right_arr, int depth, int max_thread_depth) {
+void parallel_mergesort_helper(int *arr, int low_bound, int up_bound, int* helper_arr, int depth, int max_thread_depth) {
     if (low_bound >= up_bound - 1) {
         return;
     }
     int cut_index = (int)(low_bound + (int)((up_bound - low_bound) / 2));
     if (depth > max_thread_depth) {
-        parallel_mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
-        parallel_mergesort_helper(arr, cut_index, up_bound, left_arr, right_arr, depth + 1, max_thread_depth);
+        parallel_mergesort_helper(arr, low_bound, cut_index, helper_arr, depth + 1, max_thread_depth);
+        parallel_mergesort_helper(arr, cut_index, up_bound, helper_arr + (cut_index - low_bound), depth + 1, max_thread_depth);
     } else {
         #pragma omp parallel sections num_threads(2)
         {
             #pragma omp section
-            parallel_mergesort_helper(arr, low_bound, cut_index, left_arr, right_arr, depth + 1, max_thread_depth);
+            parallel_mergesort_helper(arr, low_bound, cut_index, helper_arr, depth + 1, max_thread_depth);
 
             #pragma omp section
-            parallel_mergesort_helper(arr, cut_index, up_bound, left_arr  + (cut_index - low_bound), right_arr + (cut_index - low_bound), depth + 1, max_thread_depth);
+            parallel_mergesort_helper(arr, cut_index, up_bound, helper_arr + (cut_index - low_bound), depth + 1, max_thread_depth);
         }
     }
-    merge(arr, low_bound, cut_index, up_bound, left_arr, right_arr);
+    merge(arr, low_bound, cut_index, up_bound, helper_arr, helper_arr + (cut_index - low_bound));
     return;
 }
 
 void parallel_mergesort(int *arr, int size, int max_thread_depth) {
     omp_set_nested(1);
-    int* left_arr = malloc(size * sizeof(int));
-    int* right_arr = malloc(size * sizeof(int));
-    parallel_mergesort_helper(arr, 0, size, left_arr, right_arr, 0, max_thread_depth);
-    free(left_arr);
-    free(right_arr);
+    int* helper_arr = malloc(size * sizeof(int));
+    parallel_mergesort_helper(arr, 0, size, helper_arr, 0, max_thread_depth);
+    free(helper_arr);
 }
