@@ -15,9 +15,9 @@
 int main() {
     srand(time(0));
     int *arr = malloc(SIZE * sizeof(int));
-    fill_rand(arr, SIZE);
+    parallel_fill_rand(arr, SIZE);
 
-    //print_array(arr, SIZE);
+    print_array(arr, SIZE);
 
     struct timespec start, finish;
 
