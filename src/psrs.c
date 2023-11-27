@@ -131,7 +131,7 @@ void copy_thread_array_to_array(int *arr, int *thread_arr, int **offsets, int **
 void merge_multiple(int *arr, int *offsets, int cores) {
     int *left_arr = (int*)malloc((offsets[cores] - offsets[0]) * sizeof(int));
     int *right_arr = (int*)malloc((offsets[cores] - offsets[0]) * sizeof(int));
-    int cut_index, i;
+    int i;
     int count_bounds = cores + 1;
     for (int distance_bounds = 2; distance_bounds < count_bounds; distance_bounds *= 2) {
         for (i = distance_bounds; i < count_bounds; i += distance_bounds) {
