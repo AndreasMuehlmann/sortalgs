@@ -150,6 +150,8 @@ void merge_multiple(int *arr, int *offsets, int cores) {
 
 void psrs(int *arr, int size) {
     const int cores = omp_get_max_threads();
+    
+    omp_set_num_threads(cores);
     if (size < 1000 || cores == 1) {
         quicksort(arr, size);
         return;
