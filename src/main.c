@@ -10,7 +10,7 @@
 
 #include "searches.h"
 
-#define SIZE 10000
+#define SIZE 10
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
 // FIXME: parallel_mergesort: left and right array could be shorter
@@ -39,6 +39,14 @@ int main() {
         printf("array is sorted\n");
     } else {
         printf("array is not sorted\n");
+    }
+    for (int i = 0; i < 10; i++) {
+        int value = arr[5];
+        parallel_fill_rand(arr, SIZE);
+        psrs(arr, SIZE);
+        printf("binary_search %d\n", linear_search(arr, SIZE, value) == binary_search(arr, SIZE, value));
+        printf("interpolation_search %d\n", linear_search(arr, SIZE, value) == interpolation_search(arr, SIZE, value));
+        printf("interpolated_binary_search %d\n", linear_search(arr, SIZE, value) == interpolated_binary_search(arr, SIZE, value));
     }
     //print_array(arr, SIZE);
 
