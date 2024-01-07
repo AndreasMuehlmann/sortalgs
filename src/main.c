@@ -2,20 +2,25 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "mergesort.h"
-#include "psrs.h"
-#include "quicksort.h"
 #include "utils.h"
+
+#include "mergesort.h"
+#include "quicksort.h"
+#include "psrs.h"
+
+#include "searches.h"
+#include "multiple_searches.h"
 
 #define SIZE 1000000
 #define THREAD_DEPTH 3 // 2^THREAD_DEPTH = THREAD_COUNT
 
-// FIXME: parallel_mergesort: left and right array could be shorter
+// TODO: profile searches
+// TODO: profile multiple_searches
 
 int main() {
     srand(time(0));
     int *arr = malloc(SIZE * sizeof(int));
-    fill_rand(arr, SIZE);
+    parallel_fill_rand(arr, SIZE);
 
     //print_array(arr, SIZE);
 
@@ -38,7 +43,12 @@ int main() {
     } else {
         printf("array is not sorted\n");
     }
-    //print_array(arr, SIZE);
+    int size_searched_numbers = SIZE / 10;
+    int *searched_numbers = malloc(size_searched_numbers * sizeof(int));
+    fill_rand(searched_numbers, size_searched_numbers);
+    linear_multiple_search(arr, SIZE, searched_numbers, size_searched_numbers, binary_search);
+
+    // print_array(arr, SIZE);
 
     printf("%.5f ms\n", elapsed_ms);
     free(arr);
